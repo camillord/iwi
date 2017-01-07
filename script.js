@@ -4,10 +4,12 @@
 
 Plotly.d3.json('/Data/nodes.json', function (err, rows) {
 
+    var myPlot = document.getElementById('plot');
+
     function getPersons(data, key) {
         return data.map(function (row) {
             if (row.type === 'person') {
-                return row[key];
+                return Math.round(row[key] * 1000000) / 1000000;
             }
         });
     }
@@ -15,13 +17,13 @@ Plotly.d3.json('/Data/nodes.json', function (err, rows) {
     function getExpertise(data, key) {
         return data.map(function (row) {
             if (row.type === 'expertise') {
-                return row[key];
+                return Math.round(row[key] * 1000000) / 1000000;
             }
         });
     }
 
     function getNodes(data, key) {
-        return [data.source[key], data.target[key]];
+        return [Math.round(data.source[key] * 1000000) / 1000000, Math.round(data.target[key] * 1000000) / 1000000];
     }
 
     var data1 = {
@@ -79,7 +81,51 @@ Plotly.d3.json('/Data/nodes.json', function (err, rows) {
             r: 0,
             b: 0,
             t: 0
-        }
+        },
+        showlegend: false,
+        hoverinfo: 'name'
     };
+
     Plotly.newPlot('plot', data, layout);
+
+    myPlot.on('plotly_click', function (eventData) {
+        var point = eventData.points[0];
+
+        if (point.data.marker) {
+            point = {
+                x: point.data.x[point.pointNumber],
+                y: point.data.y[point.pointNumber],
+                z: point.data.z[point.pointNumber],
+            }
+        } else if (point.data.line) {
+            point.data.line.width = 5;
+        }
+
+        for (var i = 2; i < data.length; i++) {
+
+            if (data[i].x[0] == point.x) {
+                data[i].line.width = 5;
+                data[i].line.color = 'blue';
+            }
+            else if (data[i].x[1] == point.x && data[i].y[1] == point.y && data[i].z[1] == point.z) {
+                data[i].line.width = 5;
+                data[i].line.color = 'blue';
+            }
+            else {
+                data[i].line.width = 1;
+                data[i].line.color = 'red';
+            }
+        }
+
+        Plotly.animate('plot', {
+            data: data,
+            traces: [0],
+            layout: layout
+        }, {
+            transition: {
+                duration: 500,
+                ease: 'cubic-in-out'
+            }
+        })
+    });
 });
