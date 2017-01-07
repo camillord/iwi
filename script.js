@@ -9,15 +9,26 @@ Plotly.d3.json('/Data/nodes.json', function (err, rows) {
     function getPersons(data, key) {
         return data.map(function (row) {
             if (row.type === 'person') {
-                return Math.round(row[key] * 1000000) / 1000000;
+                if (key === 'name') {
+                    return row[key]
+                }
+                else {
+                    return Math.round(row[key] * 1000000) / 1000000;
+                }
             }
+
         });
     }
 
     function getExpertise(data, key) {
         return data.map(function (row) {
             if (row.type === 'expertise') {
-                return Math.round(row[key] * 1000000) / 1000000;
+                if (key === 'name') {
+                    return row[key]
+                }
+                else {
+                    return Math.round(row[key] * 1000000) / 1000000;
+                }
             }
         });
     }
@@ -30,14 +41,17 @@ Plotly.d3.json('/Data/nodes.json', function (err, rows) {
         x: getPersons(rows[0], 'x'), y: getPersons(rows[0], 'y'), z: getPersons(rows[0], 'z'),
         mode: 'markers',
         marker: {
-            size: 3,
+            size: 8,
             line: {
                 color: 'rgba(217, 217, 217, 0.14)',
                 width: 0.5
             },
             opacity: 0.8
         },
-        type: 'scatter3d'
+        type: 'scatter3d',
+        text: getPersons(rows[0], 'name'),
+        hoverinfo: 'name+text',
+        name: 'Person'
     };
     var data2 = {
         x: getExpertise(rows[0], 'x'), y: getExpertise(rows[0], 'y'), z: getExpertise(rows[0], 'z'),
@@ -52,7 +66,10 @@ Plotly.d3.json('/Data/nodes.json', function (err, rows) {
             },
             opacity: 0.9
         },
-        type: 'scatter3d'
+        text: getExpertise(rows[0], 'name'),
+        type: 'scatter3d',
+        hoverinfo: 'name+text',
+        name: 'Expertise'
     };
     var edges = [];
     var data = [data1, data2];
@@ -70,7 +87,9 @@ Plotly.d3.json('/Data/nodes.json', function (err, rows) {
                 width: 1,
                 color: 'red',
                 reversescale: false
-            }
+            },
+            hoverinfo: 'name',
+            name: 'Connection'
         };
         data.push(edge)
     }
@@ -82,8 +101,7 @@ Plotly.d3.json('/Data/nodes.json', function (err, rows) {
             b: 0,
             t: 0
         },
-        showlegend: false,
-        hoverinfo: 'name'
+        showlegend: false
     };
 
     Plotly.newPlot('plot', data, layout);
